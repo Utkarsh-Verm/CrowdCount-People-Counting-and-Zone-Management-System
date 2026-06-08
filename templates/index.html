@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrowdCount AI Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen font-sans">
+
+    <nav class="bg-gray-800 p-4 shadow-lg border-b border-gray-700">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-400">CrowdCount AI</h1>
+            <span class="text-sm bg-blue-900 text-blue-200 py-1 px-3 rounded-full">Live Monitor Active</span>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div class="md:col-span-2 bg-gray-800 rounded-xl overflow-hidden shadow-2xl border border-gray-700">
+            <div class="p-4 bg-gray-750 border-b border-gray-700">
+                <h2 class="text-lg font-semibold">Live Camera Feed & Tracking</h2>
+            </div>
+            <div class="aspect-video bg-black flex justify-center items-center relative">
+                <img src="{{ url_for('video_feed') }}" alt="Live Feed" class="w-full h-full object-cover">
+                <div id="alert-banner" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-2 rounded-full font-bold shadow-lg animate-pulse">
+                    ⚠️ OVERCROWDING ALERT
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-6">
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-bold uppercase tracking-wider mb-2">Total People Detected</h3>
+                <p id="current-total" class="text-5xl font-extrabold text-white">0</p>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 flex justify-between items-center">
+                <div>
+                    <h3 class="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">Total Entries</h3>
+                    <p id="entries" class="text-3xl font-bold text-green-400">0</p>
+                </div>
+                <div class="text-right">
+                    <h3 class="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">Total Exits</h3>
+                    <p id="exits" class="text-3xl font-bold text-red-400">0</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-bold uppercase tracking-wider mb-4">System Status</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-sm"><span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span> YOLOv8 Engine Running</li>
+                    <li class="flex items-center text-sm"><span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span> Camera Connected</li>
+                    <li class="flex items-center text-sm"><span class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span> Zone Config Loaded</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('current-total').innerText = data.current_total;
+                    document.getElementById('entries').innerText = data.entries;
+                    document.getElementById('exits').innerText = data.exits;
+                    
+                    const alertBanner = document.getElementById('alert-banner');
+                    if (data.alert) {
+                        alertBanner.classList.remove('hidden');
+                    } else {
+                        alertBanner.classList.add('hidden');
+                    }
+                })
+                .catch(error => console.error('Error fetching stats:', error));
+        }
+        // Update dashboard every 1 second
+        setInterval(updateStats, 1000);
+    </script>
+</body>
+</html>
